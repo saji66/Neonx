@@ -29,8 +29,12 @@ export function getSupabase(): SupabaseClient | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!url || !key || url === 'your_supabase_project_url' || url.startsWith('YOUR_')) {
-    // Not configured yet — components will fall back to placeholder data
+  if (
+    !url || !key ||
+    url.includes('placeholder') ||
+    url === 'your_supabase_project_url' ||
+    url.startsWith('YOUR_')
+  ) {
     return null;
   }
 
@@ -42,17 +46,7 @@ export function getSupabase(): SupabaseClient | null {
   }
 }
 
-// Convenience export — use getSupabase() anywhere you need the client
+// ── Safe wrapper — returns null if Supabase not configured ──
 export const supabase = {
-  from: (table: string) => {
-    const client = getSupabase();
-    if (!client) {
-      // Return a no-op stub so components don't crash
-      return {
-        select: () => ({ order: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }) }),
-        insert: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
-      } as ReturnType<SupabaseClient['from']>;
-    }
-    return client.from(table);
-  },
+  from: (table: string) => getSupabase()?.from(table) ?? null,
 };

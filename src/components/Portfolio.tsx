@@ -27,7 +27,9 @@ export default function Portfolio() {
   useEffect(() => {
     (async () => {
       try {
-        const { data, error } = await supabase.from('portfolio').select('*').order('created_at',{ascending:false});
+        const query = supabase.from('portfolio');
+        if (!query) return; // Supabase not configured — use placeholder data
+        const { data, error } = await query.select('*').order('created_at', { ascending: false });
         if (!error && data && data.length > 0) setItems(data);
       } catch {}
     })();
